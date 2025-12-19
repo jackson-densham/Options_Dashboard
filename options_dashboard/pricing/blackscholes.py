@@ -123,22 +123,91 @@ class BlackScholesPricer:
             raise ValueError("Option type specified incorrectly")
         
         return rho
-    def implied_vol(self, contract, market, market_price, sigma0=0.15, tol=1e-6, max_iter=50):
-        expiry = contract.expiry
-        strike = float(contract.strike)
 
+    def implied_vol(self, contract, market, market_price,
+                sigma0=0.15, tol=1e-6, max_iter=50,
+                sigma_min=1e-6, sigma_max=5.0,
+                bisect_max_iter=100):
+        # helper: pricing error as a function of sigma
+        def f(sig: float) -> float:
+            return self.price(contract, market, sigma_overide=sig) - market_price
+
+        # --- 1) NEWTON TRY ---
         sigma = float(sigma0)
+        last_err = None
 
         for _ in range(max_iter):
-            e = self.price(contract, market, sigma_overide=sigma) - market_price
-            if abs(e) < tol:
+            err = f(sigma)
+
+            if abs(err) < tol:
                 return sigma
 
             v = self.vega(contract, market, sigma_overide=sigma)
-            if v < 1e-10:
-                break  # vega too small -> Newton unstable
 
-            sigma = sigma - (e / v)
-            sigma = max(1e-6, min(sigma, 5.0))  # keep sigma sane
+            # Newton failure conditions
+            if (not math.isfinite(err)) or (not math.isfinite(v)) or (v < 1e-10):
+                break
 
-        raise RuntimeError("IV solver did not converge")
+            step = err / v
+            sigma_new = sigma - step
+
+            # If Newton jumps out of bounds or doesn't improve, bail to bisection
+            if (sigma_new <= sigma_min) or (sigma_new >= sigma_max):
+                break
+            if last_err is not None and abs(err) >= abs(last_err) * 0.999:
+                # not improving (or improving too slowly) -> fallback
+                break
+
+            sigma = sigma_new
+            last_err = err
+
+        # --- 2) BISECTION FALLBACK ---
+        # Find a bracket [lo, hi] such that f(lo) <= 0 <= f(hi) (or vice-versa)
+        lo = sigma_min
+        hi = min(max(sigma0, 0.3), sigma_max)  # start hi somewhat reasonable
+
+        f_lo = f(lo)
+        f_hi = f(hi)
+
+        # Expand hi until we bracket, or hit sigma_max
+        # (for deep OTM options you may need large vol to raise price)
+        expand_count = 0
+        while f_lo * f_hi > 0 and hi < sigma_max and expand_count < 30:
+            hi = min(hi * 2.0, sigma_max)
+            f_hi = f(hi)
+            expand_count += 1
+
+        # If still no bracket, try shrinking lo upward (rare case where f(lo)>0)
+        # This can happen if market_price is below intrinsic/arb, or pricing mismatch.
+        if f_lo * f_hi > 0:
+            lo2 = 1e-4
+            while f_lo * f_hi > 0 and lo2 < hi:
+                lo2 *= 2.0
+                f_lo = f(lo2)
+            lo = lo2
+
+        # If we cannot bracket, return NaN (or raise) — market price likely inconsistent
+        if not (math.isfinite(f_lo) and math.isfinite(f_hi)) or f_lo * f_hi > 0:
+            return float("nan")
+
+        # Standard bisection
+        for _ in range(bisect_max_iter):
+            mid = 0.5 * (lo + hi)
+            f_mid = f(mid)
+
+            if abs(f_mid) < tol:
+                return mid
+
+            # Keep the sub-interval that brackets the root
+            if f_lo * f_mid <= 0:
+                hi = mid
+                f_hi = f_mid
+            else:
+                lo = mid
+                f_lo = f_mid
+
+            # Optional: interval width stop
+            if (hi - lo) < 1e-10:
+                return 0.5 * (lo + hi)
+
+        return 0.5 * (lo + hi)
