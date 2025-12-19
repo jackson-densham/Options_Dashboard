@@ -1,6 +1,8 @@
 import yfinance as yf
 import pandas as pd
 import math
+import pandas_datareader.data as pdr
+import datetime as dt
 
 def get_spot_and_history(ticker):
     history = yf.Ticker(ticker).history(period='1y', interval='1d', actions=False)['Close']
@@ -33,9 +35,13 @@ def get_option_chain(ticker):
     full_chain = pd.concat(all_rows, ignore_index=True)
     return full_chain
 
-def get_rate(ticker='^IRX'):
-    rate = (yf.Ticker(ticker).history(period='5d', interval='1d', actions=False)['Close'].dropna().iloc[-1]) / 100
-    return math.log(1 + rate)
+def get_rate():
+    one_year = dt.timedelta(days=365)
+    start = dt.date.today() - one_year
+    end = dt.date.today()
+    rate = pdr.DataReader('SOFR', 'fred', start, end)
+    rate = rate.iloc[-1,0] / 100
+    return rate
 
 def get_div_yield(ticker):
     div_yield = yf.Ticker(ticker).info.get('dividendYield')
