@@ -4,12 +4,13 @@ import pandas as pd
 from options_dashboard.core.contract import Contract
 from options_dashboard.data.data import get_option_chain
 from options_dashboard.pricing.blackscholes import BlackScholesPricer
+from options_dashboard.core.types import OptionType
 
 
 def build_iv_points(
     ticker: str,
     market,
-    option_type: str = "call",      # "call" or "put" (matches your chain column)
+    option_type: OptionType.CALL,      # "call" or "put" (matches your chain column)
     expiries=None,                  # list[date] or None
     strike_min=None,
     strike_max=None,
@@ -54,7 +55,7 @@ def build_iv_points(
         market_price = float(r.mid)
 
         # your Contract expects option_type "1"/"2" or "Call"/"Put"
-        bs_type = "Call" if option_type == "call" else "Put"
+        bs_type = "Call" if option_type is OptionType.CALL else "Put"
         contract = Contract(
             strike=strike,
             expiry=expiry,
