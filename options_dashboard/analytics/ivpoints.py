@@ -55,11 +55,10 @@ def build_iv_points(
         market_price = float(r.mid)
 
         # your Contract expects option_type "1"/"2" or "Call"/"Put"
-        bs_type = "Call" if option_type is OptionType.CALL else "Put"
         contract = Contract(
             strike=strike,
             expiry=expiry,
-            option_type=bs_type,
+            option_type=option_type,
             exercise_style="European",
         )
 
