@@ -1,5 +1,6 @@
 import math
 import statistics as stats
+from options_dashboard.core.types import OptionType
 
 class BlackScholesPricer:
     def price(self, contract, market, sigma_overide=None):
@@ -16,9 +17,9 @@ class BlackScholesPricer:
         d_1 = (math.log(S/E) + ((r - D + (0.5*sigma**2))*(T))) / (sigma*math.sqrt(T))
         d_2 = d_1 - (sigma*math.sqrt(T))
 
-        if option_type == '1' or option_type == 'Call':
+        if option_type is OptionType.CALL:
             value = (S*math.exp(-D*T)*stats.NormalDist(0,1).cdf(d_1))-(E*math.exp(-r*T)*stats.NormalDist(0,1).cdf(d_2))
-        elif option_type == '2' or option_type == 'Put':
+        elif option_type is OptionType.PUT:
             value = (-S*math.exp(-D*T)*stats.NormalDist(0,1).cdf(-d_1))+(E*math.exp(-r*T)*stats.NormalDist(0,1).cdf(-d_2))
         else:
             raise ValueError('Option type specified incorrectly')
@@ -35,9 +36,9 @@ class BlackScholesPricer:
 
         d_1 = (math.log(S/E) + ((r - D + (0.5*sigma**2))*(T))) / (sigma*math.sqrt(T))
 
-        if option_type == '1' or option_type == 'Call':
+        if option_type is OptionType.CALL:
             delta = math.exp(-D*T)*stats.NormalDist(0,1).cdf(d_1)
-        elif option_type =='2' or option_type =='Put':
+        elif option_type is OptionType.PUT:
             delta = math.exp(-D*T)*(stats.NormalDist(0,1).cdf(d_1)-1)
         else:
             raise ValueError("Option type specified incorrectly")
@@ -54,9 +55,9 @@ class BlackScholesPricer:
 
         d_1 = (math.log(S/E) + ((r - D + (0.5*sigma**2))*(T))) / (sigma*math.sqrt(T))
 
-        if option_type == '1' or option_type == 'Call':
+        if option_type is OptionType.CALL:
             gamma = (math.exp(-D*T)*stats.NormalDist(0,1).pdf(d_1)) / (sigma*S*math.sqrt(T))
-        elif option_type =='2' or option_type =='Put':
+        elif option_type is OptionType.PUT:
             gamma = (math.exp(-D*T)*stats.NormalDist(0,1).pdf(d_1)) / (sigma*S*math.sqrt(T))
         else:
             raise ValueError("Option type specified incorrectly")
@@ -74,9 +75,9 @@ class BlackScholesPricer:
         d_1 = (math.log(S/E) + ((r - D + (0.5*sigma**2))*(T))) / (sigma*math.sqrt(T))
         d_2 = d_1 - (sigma*math.sqrt(T))
 
-        if option_type == '1' or option_type == 'Call':
+        if option_type is OptionType.CALL:
             theta = -(1/365)*((-(sigma*S*math.exp(-D*T)*stats.NormalDist(0,1).pdf(d_1))/(2*math.sqrt(T))) + (D*S*stats.NormalDist(0,1).cdf(d_1)*math.exp(-D*T)) - (r*E*math.exp(-r*T)*stats.NormalDist(0,1).cdf(d_2)))
-        elif option_type =='2' or option_type =='Put':
+        elif option_type is OptionType.PUT:
             theta = -(1/365)*((-(sigma*S*math.exp(-D*T)*stats.NormalDist(0,1).pdf(-d_1))/(2*math.sqrt(T))) + (D*S*stats.NormalDist(0,1).cdf(-d_1)*math.exp(-D*T)) - (r*E*math.exp(-r*T)*stats.NormalDist(0,1).cdf(-d_2)))
         else:
             raise ValueError("Option type specified incorrectly")
@@ -95,9 +96,9 @@ class BlackScholesPricer:
 
         d_1 = (math.log(S/E) + ((r - D + (0.5*sigma**2))*(T))) / (sigma*math.sqrt(T))
 
-        if option_type == '1' or option_type == 'Call':
+        if option_type is OptionType.CALL:
             vega = (S*math.sqrt(T)*math.exp(-D*T)*stats.NormalDist(0,1).pdf(d_1))
-        elif option_type =='2' or option_type =='Put':
+        elif option_type is OptionType.PUT:
             vega = (S*math.sqrt(T)*math.exp(-D*T)*stats.NormalDist(0,1).pdf(d_1))
         else:
             raise ValueError("Option type specified incorrectly")
@@ -115,9 +116,9 @@ class BlackScholesPricer:
         d_1 = (math.log(S/E) + ((r - D + (0.5*sigma**2))*(T))) / (sigma*math.sqrt(T))
         d_2 = d_1 - (sigma*math.sqrt(T))
 
-        if option_type == '1' or option_type == 'Call':
+        if option_type is OptionType.CALL:
             rho = (E*T*math.exp(-r*T)*stats.NormalDist(0,1).cdf(d_2))/100
-        elif option_type =='2' or option_type =='Put':
+        elif option_type is OptionType.PUT:
             rho = (-E*T*math.exp(-r*T)*stats.NormalDist(0,1).cdf(-d_2))/100
         else:
             raise ValueError("Option type specified incorrectly")

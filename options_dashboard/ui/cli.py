@@ -85,22 +85,22 @@ def run():
             main_menu_selection = show_main_menu()
 
     # Loop to continue showing the contract menu untill a valid selection is made
-    if main_menu_selection == "1" or main_menu_selection == "Contract Analysis":
+    if main_menu_selection == "1":
         contract_menu = True
         while contract_menu == True:
-            if contract_menu_selection == "1" or contract_menu_selection == "Pricing":
+            if contract_menu_selection == "1":
                 pricing_menu_selection = show_pricing_menu()
                 contract_menu = False
-            elif contract_menu_selection == "2" or contract_menu_selection == "Term Structure Plot":
+            elif contract_menu_selection == "2":
                 print("Term structure coming soon")
                 contract_menu = False
-            elif contract_menu_selection == "3" or contract_menu_selection == "Volatility Smile Plot":
+            elif contract_menu_selection == "3":
                 maturity = input("Select a maturity")
                 contract_menu = False
-            elif contract_menu_selection == "4" or contract_menu_selection == "IV Surface":
+            elif contract_menu_selection == "4":
                 print("Vol surface coming soon")
                 contract_menu = False
-            elif contract_menu_selection == "5" or contract_menu_selection == "Vol Analysis":
+            elif contract_menu_selection == "5":
                 vol_analysis_selection = show_vol_analysis_menu()
                 contract_menu = False
             else:
@@ -108,12 +108,12 @@ def run():
                 contract_menu_selection = show_contract_menu()
 
     # Loop to continue showing the pricing menu unitll a valid selection is made
-    if contract_menu_selection == "1" or contract_menu_selection == "Pricing":
+    if contract_menu_selection == "1":
         pricing_menu = True
         while pricing_menu == True:
-            if pricing_menu_selection == "1" or pricing_menu_selection == "Binomial Asset Pricing Model":
+            if pricing_menu_selection == "1":
                 pricing_menu = False
-            elif pricing_menu_selection == "2" or pricing_menu_selection == "Black-Scholes Pricing Model":
+            elif pricing_menu_selection == "2":
                 option_type, expiry, strike = show_contract_info_menu(ticker)
                 contract = Contract(strike=strike, expiry=expiry, option_type=option_type, exercise_style='European')
                 pricer = BlackScholesPricer()
