@@ -5,6 +5,7 @@ from options_dashboard.core.contract import Contract
 from options_dashboard.pricing.blackscholes import BlackScholesPricer
 from options_dashboard.data.data import get_spot_and_history, get_option_chain, get_rate, get_div_yield, get_mid_from_chain
 from options_dashboard.analytics.volanalytics import VolModels
+from options_dashboard.core.types import OptionType
 
 def run():
     # Function to pull up the main menu
@@ -43,7 +44,13 @@ def run():
         print("Select Option Type")
         print("1. Call")
         print("2. Put")
-        option_type = input("")
+        choice = input("").strip()
+        if choice == "1":
+            option_type = OptionType.CALL
+        elif choice == "2":
+            option_type = OptionType.PUT
+        else:
+            raise ValueError("Invalid option type")
         print("Select Expiration")
         print(get_option_chain(ticker)['expiry'].unique())
         expiry = input("")
@@ -67,7 +74,7 @@ def run():
     main_menu = True
     market = None
     while main_menu == True:
-        if main_menu_selection == "1" or main_menu_selection == "Contract Analysis":
+        if main_menu_selection == "1":
             ticker = input("Yahoo Finance Ticker:").strip().upper()
             asof = dt.date.today()
             spot, history = get_spot_and_history(ticker)
@@ -77,7 +84,7 @@ def run():
             market = MarketData(asof=asof, spot=spot, rate=rate, div_yield=div_yield, vol=vol)
             contract_menu_selection = show_contract_menu()
             main_menu = False
-        elif main_menu_selection == "2" or main_menu_selection == "Strategy Analysis":
+        elif main_menu_selection == "2":
             print("Strategy Analysis Coming Soon")
             main_menu_selection = show_main_menu()
         else:
@@ -146,8 +153,7 @@ def run():
                 contract = Contract(strike=strike, expiry=expiry, option_type=option_type, exercise_style='European')
                 pricer = BlackScholesPricer()
                 chain = get_option_chain(ticker)
-                opt_type = "call" if option_type in ("1", "Call") else "put"
-                market_price = get_mid_from_chain(chain, expiry, float(strike), opt_type)
+                market_price = get_mid_from_chain(chain, expiry, float(strike), option_type.value)
                 iv = pricer.implied_vol(contract, market, market_price)
                 rolling_vol = VolModels.rolling_realized(history)
                 ewma_vol = VolModels.ewma(history)

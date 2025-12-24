@@ -10,12 +10,12 @@ from options_dashboard.core.types import OptionType
 def build_iv_points(
     ticker: str,
     market,
-    option_type: OptionType.CALL,      # "call" or "put" (matches your chain column)
+    option_type: OptionType = OptionType.CALL,
     expiries=None,                  # list[date] or None
     strike_min=None,
     strike_max=None,
     min_mid: float = 0.01,
-    max_spread_pct: float = 0.30,   # drop super-wide markets (30% of mid)
+    max_spread_pct: float = 0.30,
     pricer=None,
 ):
     """
@@ -54,7 +54,6 @@ def build_iv_points(
         strike = float(r.strike)
         market_price = float(r.mid)
 
-        # your Contract expects option_type "1"/"2" or "Call"/"Put"
         contract = Contract(
             strike=strike,
             expiry=expiry,
